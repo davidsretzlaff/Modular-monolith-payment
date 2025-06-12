@@ -6,6 +6,7 @@ namespace Catalog.Infrastructure;
 public class CatalogDbContext : DbContext
 {
     public DbSet<Coupon> Coupons { get; set; }
+    public DbSet<Plan> Plans { get; set; }
 
     public CatalogDbContext(DbContextOptions<CatalogDbContext> options) : base(options)
     {
