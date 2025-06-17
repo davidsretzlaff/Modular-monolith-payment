@@ -53,5 +53,11 @@ public class PlanConfiguration : IEntityTypeConfiguration<Plan>
 
         builder.HasIndex(p => p.Name)
             .HasDatabaseName("IX_Plans_Name");
+
+        // Configuração da coleção de PlanPricingOption
+        builder.HasMany(x => x.PricingOptions)
+            .WithOne(x => x.Plan)
+            .HasForeignKey(x => x.PlanId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 } 

@@ -1,4 +1,5 @@
 using Shared.Core;
+using System.Collections.Generic;
 
 namespace Catalog.Domain.Entities;
 
@@ -6,23 +7,22 @@ public class Plan : Entity
 {
     public string Name { get; private set; }
     public string Description { get; private set; }
-    public decimal Price { get; private set; }
     public bool IsActive { get; private set; }
     public Guid CompanyId { get; private set; }
     public int DurationInDays { get; private set; }
 
+    private readonly List<PlanPricingOption> _pricingOptions = new();
+    public IReadOnlyCollection<PlanPricingOption> PricingOptions => _pricingOptions.AsReadOnly();
+
     private Plan() : base() { } // For EF Core
 
-    public Plan(string name, string description, decimal price, Guid companyId, int durationInDays = 30) : base()
+    public Plan(string name, string description, Guid companyId, int durationInDays = 30) : base()
     {
         if (string.IsNullOrWhiteSpace(name))
             throw new ArgumentException("Name cannot be empty", nameof(name));
         
         if (string.IsNullOrWhiteSpace(description))
             throw new ArgumentException("Description cannot be empty", nameof(description));
-        
-        if (price <= 0)
-            throw new ArgumentException("Price must be greater than zero", nameof(price));
         
         if (companyId == Guid.Empty)
             throw new ArgumentException("CompanyId cannot be empty", nameof(companyId));
@@ -32,18 +32,15 @@ public class Plan : Entity
 
         Name = name;
         Description = description;
-        Price = price;
         CompanyId = companyId;
         DurationInDays = durationInDays;
         IsActive = true;
     }
 
-    public void UpdatePrice(decimal newPrice)
+    public void AddPricingOption(decimal price, int billingCycleInMonths)
     {
-        if (newPrice <= 0)
-            throw new ArgumentException("Price must be greater than zero", nameof(newPrice));
-        
-        Price = newPrice;
+        var pricingOption = new PlanPricingOption(Id, price, billingCycleInMonths);
+        _pricingOptions.Add(pricingOption);
         UpdateTimestamp();
     }
 
