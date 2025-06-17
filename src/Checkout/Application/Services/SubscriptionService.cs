@@ -12,17 +12,20 @@ public class SubscriptionService : ISubscriptionService
     private readonly ICustomerRepository _customerRepository;
     private readonly IPlanRepository _planRepository;
     private readonly ICouponRepository _couponRepository;
+    private readonly IPaymentGateway _paymentGateway;
 
     public SubscriptionService(
         ISubscriptionRepository subscriptionRepository,
         ICustomerRepository customerRepository,
         IPlanRepository planRepository,
-        ICouponRepository couponRepository)
+        ICouponRepository couponRepository,
+        IPaymentGateway paymentGateway)
     {
         _subscriptionRepository = subscriptionRepository;
         _customerRepository = customerRepository;
         _planRepository = planRepository;
         _couponRepository = couponRepository;
+        _paymentGateway = paymentGateway;
     }
 
     public async Task<Guid> CreateAsync(CreateSubscriptionDto dto, Guid companyId)
@@ -57,6 +60,20 @@ public class SubscriptionService : ISubscriptionService
 
         var subscription = new Subscription(dto.CustomerId, dto.PlanId, dto.CouponId, companyId);
         await _subscriptionRepository.AddAsync(subscription);
+
+        var paymentId = await _paymentGateway.CreatePaymentAsync(
+            plan.Price,
+            "BRL",
+            $"Subscription to plan {plan.Name}");
+
+        var paymentConfirmed = await _paymentGateway.ConfirmPaymentAsync(paymentId);
+        if (!paymentConfirmed)
+        {
+            await _paymentGateway.CancelPaymentAsync(paymentId);
+            subscription.Cancel();
+            await _subscriptionRepository.UpdateAsync(subscription);
+            throw new InvalidOperationException("Payment failed");
+        }
 
         return subscription.Id;
     }
