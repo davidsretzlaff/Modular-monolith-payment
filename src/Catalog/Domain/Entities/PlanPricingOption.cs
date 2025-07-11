@@ -1,6 +1,6 @@
-using Modular.Shared.Domain;
+using Shared.Core;
 
-namespace Modular.Catalog.Domain.Entities;
+namespace Catalog.Domain.Entities;
 
 public class PlanPricingOption : Entity
 {

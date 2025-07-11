@@ -1,4 +1,4 @@
-using Modular.Catalog.Domain.Repositories;
+using Shared.Contracts;
 using Modular.Checkout.Application.Dtos;
 using Modular.Checkout.Application.Services;
 using Modular.Checkout.Domain.Entities;
@@ -10,21 +10,18 @@ public class SubscriptionService : ISubscriptionService
 {
     private readonly ISubscriptionRepository _subscriptionRepository;
     private readonly ICustomerRepository _customerRepository;
-    private readonly IPlanRepository _planRepository;
-    private readonly ICouponRepository _couponRepository;
+    private readonly ICatalogApiProvider _catalogApiProvider;
     private readonly IPaymentGateway _paymentGateway;
 
     public SubscriptionService(
         ISubscriptionRepository subscriptionRepository,
         ICustomerRepository customerRepository,
-        IPlanRepository planRepository,
-        ICouponRepository couponRepository,
+        ICatalogApiProvider catalogApiProvider,
         IPaymentGateway paymentGateway)
     {
         _subscriptionRepository = subscriptionRepository;
         _customerRepository = customerRepository;
-        _planRepository = planRepository;
-        _couponRepository = couponRepository;
+        _catalogApiProvider = catalogApiProvider;
         _paymentGateway = paymentGateway;
     }
 
@@ -37,34 +34,56 @@ public class SubscriptionService : ISubscriptionService
         if (!customer.IsActive)
             throw new InvalidOperationException("Customer is inactive");
 
-        var plan = await _planRepository.GetByIdAsync(dto.PlanId, companyId);
-        if (plan == null)
+        // Validate plan exists and is active via Catalog API
+        var planExists = await _catalogApiProvider.PlanExistsAsync(dto.PlanId, companyId);
+        if (!planExists)
             throw new InvalidOperationException("Plan not found");
 
-        if (!plan.IsActive)
+        var planIsActive = await _catalogApiProvider.IsPlanActiveAsync(dto.PlanId, companyId);
+        if (!planIsActive)
             throw new InvalidOperationException("Plan is inactive");
 
+        // Validate coupon if provided
         if (dto.CouponId.HasValue)
         {
-            var coupon = await _couponRepository.GetByIdAsync(dto.CouponId.Value, companyId);
-            if (coupon == null)
+            var couponExists = await _catalogApiProvider.CouponExistsAsync(dto.CouponId.Value, companyId);
+            if (!couponExists)
                 throw new InvalidOperationException("Coupon not found");
 
-            if (!coupon.IsActive)
+            var couponIsActive = await _catalogApiProvider.IsCouponActiveAsync(dto.CouponId.Value, companyId);
+            if (!couponIsActive)
                 throw new InvalidOperationException("Coupon is inactive");
+
+            // Validate coupon is valid for the plan
+            var couponValidForPlan = await _catalogApiProvider.IsCouponValidForPlanAsync(dto.CouponId.Value, dto.PlanId);
+            if (!couponValidForPlan)
+                throw new InvalidOperationException("Coupon is not valid for this plan");
         }
 
         var activeSubscription = await _subscriptionRepository.GetActiveByCustomerIdAsync(dto.CustomerId, companyId);
         if (activeSubscription != null)
             throw new InvalidOperationException("Customer already has an active subscription");
 
+        // Get plan info for payment
+        var planInfo = await _catalogApiProvider.GetPlanBasicInfoAsync(dto.PlanId, companyId);
+        if (planInfo == null)
+            throw new InvalidOperationException("Plan information not available");
+
         var subscription = new Subscription(dto.CustomerId, dto.PlanId, dto.CouponId, companyId);
         await _subscriptionRepository.AddAsync(subscription);
 
+        // Calculate final price (with discount if coupon is applied)
+        decimal finalPrice = planInfo.Price;
+        if (dto.CouponId.HasValue)
+        {
+            var discountAmount = await _catalogApiProvider.CalculateDiscountAsync(dto.CouponId.Value, planInfo.Price);
+            finalPrice = planInfo.Price - discountAmount;
+        }
+
         var paymentId = await _paymentGateway.CreatePaymentAsync(
-            plan.Price,
+            finalPrice,
             "BRL",
-            $"Subscription to plan {plan.Name}");
+            $"Subscription to plan {planInfo.Name}");
 
         var paymentConfirmed = await _paymentGateway.ConfirmPaymentAsync(paymentId);
         if (!paymentConfirmed)

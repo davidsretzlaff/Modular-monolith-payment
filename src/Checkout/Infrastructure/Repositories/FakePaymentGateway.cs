@@ -1,6 +1,6 @@
-using Modular.Checkout.Domain.Repositories;
+using Checkout.Domain.Repositories;
 
-namespace Modular.Checkout.Infrastructure.Repositories;
+namespace Checkout.Infrastructure.Repositories;
 
 public class FakePaymentGateway : IPaymentGateway
 {

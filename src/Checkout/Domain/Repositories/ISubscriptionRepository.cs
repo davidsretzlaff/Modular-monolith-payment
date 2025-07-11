@@ -1,6 +1,6 @@
-using Modular.Checkout.Domain.Entities;
+using Checkout.Domain.Entities;
 
-namespace Modular.Checkout.Domain.Repositories;
+namespace Checkout.Domain.Repositories;
 
 public interface ISubscriptionRepository
 {

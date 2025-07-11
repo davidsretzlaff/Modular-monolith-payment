@@ -1,15 +1,14 @@
 using Microsoft.EntityFrameworkCore;
-using Modular.Checkout.Domain.Entities;
-using Modular.Checkout.Domain.Repositories;
-using Modular.Shared.Infrastructure.Data;
+using Checkout.Domain.Entities;
+using Checkout.Domain.Repositories;
 
-namespace Modular.Checkout.Infrastructure.Repositories;
+namespace Checkout.Infrastructure.Repositories;
 
 public class SubscriptionRepository : ISubscriptionRepository
 {
-    private readonly ApplicationDbContext _context;
+    private readonly CheckoutDbContext _context;
 
-    public SubscriptionRepository(ApplicationDbContext context)
+    public SubscriptionRepository(CheckoutDbContext context)
     {
         _context = context;
     }

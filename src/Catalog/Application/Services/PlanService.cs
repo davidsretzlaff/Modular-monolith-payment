@@ -1,6 +1,6 @@
-using Admin.Application.Integration.Provider;
 using Catalog.Application.Dtos;
 using Catalog.Application.Queries;
+using Catalog.Application.Integration;
 using Catalog.Domain.Entities;
 using Catalog.Domain.Repositories;
 
@@ -51,10 +51,12 @@ public class PlanService : IPlanService
         var plan = new Plan(
             createDto.Name,
             createDto.Description,
-            createDto.Price,
             createDto.CompanyId,
             createDto.DurationInDays
         );
+
+        // Add pricing option
+        plan.AddPricingOption(createDto.Price, 1); // Default to 1 month billing cycle
 
         await _planRepository.AddAsync(plan);
         await _planRepository.SaveChangesAsync();
@@ -70,7 +72,17 @@ public class PlanService : IPlanService
         if (plan == null)
             throw new InvalidOperationException("Plan not found");
 
-        plan.UpdatePrice(newPrice);
+        // Get the first pricing option or create a new one
+        var pricingOption = plan.PricingOptions.FirstOrDefault();
+        if (pricingOption == null)
+        {
+            plan.AddPricingOption(newPrice, 1);
+        }
+        else
+        {
+            pricingOption.UpdatePrice(newPrice);
+        }
+
         _planRepository.Update(plan);
         await _planRepository.SaveChangesAsync();
     }

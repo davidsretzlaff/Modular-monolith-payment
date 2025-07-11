@@ -1,12 +1,12 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Modular.Charge.ChargeEngine.Configuration;
-using Modular.Charge.ChargeEngine.Resilience;
-using Modular.Charge.Domain.Entities;
-using Modular.Charge.Domain.Repositories;
-using Modular.Charge.Domain.Services;
+using Charge.ChargeEngine.Configuration;
+using Charge.ChargeEngine.Resilience;
+using Charge.Domain.Entities;
+using Charge.Domain.Repositories;
+using Checkout.Domain.Repositories;
 
-namespace Modular.Charge.ChargeEngine.Services;
+namespace Charge.ChargeEngine.Services;
 
 public class BatchProcessingService
 {

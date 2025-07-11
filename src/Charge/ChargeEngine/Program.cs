@@ -1,12 +1,13 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Configuration;
-using Modular.Charge.ChargeEngine.Configuration;
-using Modular.Charge.ChargeEngine.Services;
-using Modular.Charge.ChargeEngine.Metrics;
-using Modular.Charge.Domain.Repositories;
-using Modular.Charge.Domain.Services;
-using Modular.Charge.Infrastructure.Repositories;
+using Charge.ChargeEngine.Configuration;
+using Charge.ChargeEngine.Services;
+using Charge.ChargeEngine.Metrics;
+using Charge.Domain.Repositories;
+using Charge.Infrastructure.Repositories;
+using Checkout.Domain.Repositories;
+using Checkout.Infrastructure.Repositories;
 
 var host = Host.CreateDefaultBuilder(args)
     .ConfigureServices((context, services) =>

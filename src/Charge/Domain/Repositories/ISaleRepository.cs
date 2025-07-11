@@ -1,6 +1,6 @@
-using Modular.Charge.Domain.Entities;
+using Charge.Domain.Entities;
 
-namespace Modular.Charge.Domain.Repositories;
+namespace Charge.Domain.Repositories;
 
 public interface ISaleRepository
 {

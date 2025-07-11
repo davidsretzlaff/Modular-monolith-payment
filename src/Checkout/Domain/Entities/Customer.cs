@@ -1,12 +1,12 @@
-using Modular.Shared.Domain;
+using Shared.Core;
 
-namespace Modular.Checkout.Domain.Entities;
+namespace Checkout.Domain.Entities;
 
 public class Customer : Entity
 {
-    public string Email { get; private set; }
-    public string Name { get; private set; }
-    public string Document { get; private set; }
+    public required string Email { get; private set; }
+    public required string Name { get; private set; }
+    public required string Document { get; private set; }
     public bool IsActive { get; private set; }
     public Guid CompanyId { get; private set; }
     public DateTime CreateDate { get; private set; }

@@ -1,4 +1,4 @@
-namespace Modular.Charge.ChargeEngine.Configuration;
+namespace Charge.ChargeEngine.Configuration;
 
 public class ChargeEngineOptions
 {

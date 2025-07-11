@@ -1,15 +1,14 @@
 using Microsoft.EntityFrameworkCore;
-using Modular.Charge.Domain.Entities;
-using Modular.Charge.Domain.Repositories;
-using Modular.Shared.Infrastructure.Data;
+using Charge.Domain.Entities;
+using Charge.Domain.Repositories;
 
-namespace Modular.Charge.Infrastructure.Repositories;
+namespace Charge.Infrastructure.Repositories;
 
 public class TransactionRepository : ITransactionRepository
 {
-    private readonly ApplicationDbContext _context;
+    private readonly ChargeDbContext _context;
 
-    public TransactionRepository(ApplicationDbContext context)
+    public TransactionRepository(ChargeDbContext context)
     {
         _context = context;
     }

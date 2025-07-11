@@ -1,8 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using Modular.Checkout.Domain.Entities;
+using Checkout.Domain.Entities;
 
-namespace Modular.Checkout.Infrastructure.EntityConfigurations;
+namespace Checkout.Infrastructure.EntityConfigurations;
 
 public class CustomerConfiguration : IEntityTypeConfiguration<Customer>
 {

@@ -5,8 +5,8 @@ namespace Catalog.Domain.Entities;
 
 public class Plan : Entity
 {
-    public string Name { get; private set; }
-    public string Description { get; private set; }
+    public string Name { get; private set; } = string.Empty;
+    public string Description { get; private set; } = string.Empty;
     public bool IsActive { get; private set; }
     public Guid CompanyId { get; private set; }
     public int DurationInDays { get; private set; }

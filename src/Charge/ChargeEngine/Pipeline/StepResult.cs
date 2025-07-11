@@ -2,14 +2,14 @@ namespace Modular.Charge.ChargeEngine.Pipeline;
 
 public class StepResult
 {
-    public bool Success { get; }
+    public bool IsSuccess { get; }
     public string? ErrorMessage { get; }
     public bool ShouldRetry { get; }
     public TimeSpan? RetryAfter { get; }
 
     private StepResult(bool success, string? errorMessage = null, bool shouldRetry = false, TimeSpan? retryAfter = null)
     {
-        Success = success;
+        IsSuccess = success;
         ErrorMessage = errorMessage;
         ShouldRetry = shouldRetry;
         RetryAfter = retryAfter;

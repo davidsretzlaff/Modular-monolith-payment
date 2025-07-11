@@ -1,6 +1,6 @@
-using Modular.Shared.Domain;
+using Shared.Core;
 
-namespace Modular.Checkout.Domain.Entities;
+namespace Checkout.Domain.Entities;
 
 public class Subscription : Entity
 {
@@ -15,8 +15,6 @@ public class Subscription : Entity
 
     // Propriedades de navegação
     public virtual Customer Customer { get; private set; } = null!;
-    public virtual Plan Plan { get; private set; } = null!;
-    public virtual Coupon? Coupon { get; private set; }
 
     protected Subscription() { } // For EF
 

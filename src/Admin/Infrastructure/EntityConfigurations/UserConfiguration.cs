@@ -1,8 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using Modular.Admin.Domain.Entities;
+using Admin.Domain.Entities;
 
-namespace Modular.Admin.Infrastructure.EntityConfigurations;
+namespace Admin.Infrastructure.EntityConfigurations;
 
 public class UserConfiguration : IEntityTypeConfiguration<User>
 {

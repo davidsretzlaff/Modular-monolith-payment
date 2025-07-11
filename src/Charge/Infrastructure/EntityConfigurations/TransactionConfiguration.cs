@@ -1,8 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using Modular.Charge.Domain.Entities;
+using Charge.Domain.Entities;
 
-namespace Modular.Charge.Infrastructure.EntityConfigurations;
+namespace Charge.Infrastructure.EntityConfigurations;
 
 public class TransactionConfiguration : IEntityTypeConfiguration<Transaction>
 {

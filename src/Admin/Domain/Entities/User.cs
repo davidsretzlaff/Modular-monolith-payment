@@ -1,6 +1,6 @@
-using Modular.Shared.Domain;
+using Shared.Core;
 
-namespace Modular.Admin.Domain.Entities;
+namespace Admin.Domain.Entities;
 
 public class User : Entity
 {

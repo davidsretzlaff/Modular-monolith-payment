@@ -4,8 +4,8 @@ namespace Catalog.Domain.Entities;
 
 public class Coupon : Entity
 {
-    public string Code { get; private set; }
-    public string Description { get; private set; }
+    public string Code { get; private set; } = string.Empty;
+    public string Description { get; private set; } = string.Empty;
     public decimal DiscountValue { get; private set; }
     public bool IsPercentage { get; private set; }
     public DateTime ValidFrom { get; private set; }

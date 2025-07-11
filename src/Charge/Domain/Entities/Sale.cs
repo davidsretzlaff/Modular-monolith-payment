@@ -1,6 +1,6 @@
-using Modular.Shared.Domain;
+using Shared.Core;
 
-namespace Modular.Charge.Domain.Entities;
+namespace Charge.Domain.Entities;
 
 public class Sale : Entity
 {

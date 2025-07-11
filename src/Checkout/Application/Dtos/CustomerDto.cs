@@ -1,0 +1,31 @@
+using Shared.Core;
+
+namespace Checkout.Application.Dtos;
+
+public class CustomerDto
+{
+    public Guid Id { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public string Email { get; set; } = string.Empty;
+    public Guid CompanyId { get; set; }
+    public bool IsActive { get; set; }
+    public DateTime CreatedAt { get; set; }
+    public DateTime UpdatedAt { get; set; }
+    
+    // Navigation properties for complex queries
+    public CompanyDto? Company { get; set; }
+    public ICollection<SubscriptionDto>? Subscriptions { get; set; }
+}
+
+public class CreateCustomerDto
+{
+    public string Name { get; set; } = string.Empty;
+    public string Email { get; set; } = string.Empty;
+    public Guid CompanyId { get; set; }
+}
+
+public class UpdateCustomerDto
+{
+    public string Name { get; set; } = string.Empty;
+    public string Email { get; set; } = string.Empty;
+} 

@@ -1,4 +1,4 @@
-namespace Modular.Checkout.Domain.Repositories;
+namespace Checkout.Domain.Repositories;
 
 public interface IPaymentGateway
 {

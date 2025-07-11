@@ -1,8 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using Modular.Catalog.Domain.Entities;
+using Catalog.Domain.Entities;
 
-namespace Modular.Catalog.Infrastructure.EntityConfigurations;
+namespace Catalog.Infrastructure.EntityConfigurations;
 
 public class PlanPricingOptionConfiguration : IEntityTypeConfiguration<PlanPricingOption>
 {

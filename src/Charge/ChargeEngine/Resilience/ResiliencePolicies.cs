@@ -1,9 +1,10 @@
+using Microsoft.Extensions.Logging;
 using Polly;
 using Polly.CircuitBreaker;
 using Polly.Retry;
-using Microsoft.Extensions.Logging;
+using Polly.Timeout;
 
-namespace Modular.Charge.ChargeEngine.Resilience;
+namespace Charge.ChargeEngine.Resilience;
 
 public static class ResiliencePolicies
 {

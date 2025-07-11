@@ -1,14 +1,14 @@
-using Modular.Shared.Domain;
+using Shared.Core;
 
-namespace Modular.Charge.Domain.Entities;
+namespace Charge.Domain.Entities;
 
 public class Transaction : Entity
 {
     public Guid SaleId { get; private set; }
     public decimal Amount { get; private set; }
-    public string Currency { get; private set; }
-    public string Status { get; private set; }
-    public string PaymentId { get; private set; }
+    public required string Currency { get; private set; }
+    public required string Status { get; private set; }
+    public required string PaymentId { get; private set; }
     public DateTime CreateDate { get; private set; }
     public DateTime? ProcessedDate { get; private set; }
     public Guid CompanyId { get; private set; }

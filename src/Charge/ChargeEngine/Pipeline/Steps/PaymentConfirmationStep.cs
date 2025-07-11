@@ -1,12 +1,12 @@
-using Microsoft.Extensions.Logging;
-using Modular.Charge.Domain.Repositories;
-using Modular.Charge.Domain.Services;
+using Charge.ChargeEngine.Pipeline;
+using Charge.Domain.Repositories;
+using Charge.Domain.Services;
+using Charge.ChargeEngine.Messaging.Models;
 
-namespace Modular.Charge.ChargeEngine.Pipeline.Steps;
+namespace Charge.ChargeEngine.Pipeline.Steps;
 
 public class PaymentConfirmationStep : IChargeProcessingStep
 {
-    private readonly ILogger<PaymentConfirmationStep> _logger;
     private readonly IPaymentGateway _paymentGateway;
     private readonly ITransactionRepository _transactionRepository;
     private readonly ISaleRepository _saleRepository;
@@ -14,12 +14,10 @@ public class PaymentConfirmationStep : IChargeProcessingStep
     public int Order => 3;
 
     public PaymentConfirmationStep(
-        ILogger<PaymentConfirmationStep> logger,
         IPaymentGateway paymentGateway,
         ITransactionRepository transactionRepository,
         ISaleRepository saleRepository)
     {
-        _logger = logger;
         _paymentGateway = paymentGateway;
         _transactionRepository = transactionRepository;
         _saleRepository = saleRepository;
@@ -29,38 +27,37 @@ public class PaymentConfirmationStep : IChargeProcessingStep
     {
         try
         {
-            if (context.Transaction == null || context.Sale == null)
+            // Confirm payment with gateway
+            var confirmation = await _paymentGateway.ConfirmPaymentAsync(context.PaymentId!);
+            
+            if (confirmation.IsConfirmed)
             {
-                return StepResult.Failure("Transaction or Sale not found in context");
-            }
+                // Update transaction status
+                if (context.Transaction != null)
+                {
+                    context.Transaction.Confirm();
+                    await _transactionRepository.UpdateAsync(context.Transaction);
+                }
 
-            var payment = await _paymentGateway.ConfirmPaymentAsync(context.PaymentId!);
-            if (!payment.Success)
+                // Update sale status
+                if (context.Sale != null)
+                {
+                    context.Sale.Confirm();
+                    await _saleRepository.UpdateAsync(context.Sale);
+                }
+
+                return StepResult.Success();
+            }
+            else
             {
-                context.Transaction.Status = "FAILED";
-                context.Transaction.ErrorMessage = payment.ErrorMessage;
-                await _transactionRepository.UpdateAsync(context.Transaction);
-
-                context.Sale.Status = "FAILED";
-                await _saleRepository.UpdateAsync(context.Sale);
-
-                return StepResult.Failure($"Payment confirmation failed: {payment.ErrorMessage}");
+                context.AddError($"Payment confirmation failed: {confirmation.ErrorMessage}");
+                return StepResult.Failure(confirmation.ErrorMessage);
             }
-
-            context.Transaction.Status = "COMPLETED";
-            context.Transaction.CompletedAt = DateTime.UtcNow;
-            await _transactionRepository.UpdateAsync(context.Transaction);
-
-            context.Sale.Status = "COMPLETED";
-            context.Sale.PaidAt = DateTime.UtcNow;
-            await _saleRepository.UpdateAsync(context.Sale);
-
-            return StepResult.Success();
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error confirming payment for transaction {TransactionId}", context.Transaction?.Id);
-            return StepResult.Retry($"Error confirming payment: {ex.Message}", TimeSpan.FromMinutes(5));
+            context.AddError($"Payment confirmation error: {ex.Message}");
+            return StepResult.Failure(ex.Message);
         }
     }
 } 
