@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
-using Admin.Application.Services;
-using Admin.Application.Dtos;
+using Admin.Application.Commands.Companies;
+using Admin.Application.Queries.Companies;
+using Shared.Core.Cqrs;
 
 namespace Admin.Api.Controllers;
 
@@ -8,97 +9,93 @@ namespace Admin.Api.Controllers;
 [Route("api/[controller]")]
 public class CompaniesController : ControllerBase
 {
-    private readonly ICompanyService _companyService;
+    private readonly IQueryDispatcher _queryDispatcher;
+    private readonly ICommandDispatcher _commandDispatcher;
 
-    public CompaniesController(ICompanyService companyService)
+    public CompaniesController(IQueryDispatcher queryDispatcher, ICommandDispatcher commandDispatcher)
     {
-        _companyService = companyService;
+        _queryDispatcher = queryDispatcher;
+        _commandDispatcher = commandDispatcher;
     }
 
-    [HttpGet]
-    public async Task<ActionResult<IEnumerable<CompanyDto>>> GetAll()
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetById(Guid id)
     {
-        var companies = await _companyService.GetAllAsync();
-        return Ok(companies);
-    }
-
-    [HttpGet("active")]
-    public async Task<ActionResult<IEnumerable<CompanyDto>>> GetActive()
-    {
-        var companies = await _companyService.GetActiveAsync();
-        return Ok(companies);
-    }
-
-    [HttpGet("{id:guid}")]
-    public async Task<ActionResult<CompanyDto>> GetById(Guid id)
-    {
-        var company = await _companyService.GetByIdAsync(id);
+        var company = await _queryDispatcher.DispatchAsync(new GetCompanyByIdQuery(id));
         if (company == null)
             return NotFound();
 
         return Ok(company);
     }
 
+    [HttpGet]
+    public async Task<IActionResult> GetAll()
+    {
+        var companies = await _queryDispatcher.DispatchAsync(new GetAllCompaniesQuery());
+        return Ok(companies);
+    }
+
+    [HttpGet("active")]
+    public async Task<IActionResult> GetActive()
+    {
+        var companies = await _queryDispatcher.DispatchAsync(new GetActiveCompaniesQuery());
+        return Ok(companies);
+    }
+
     [HttpPost]
-    public async Task<ActionResult<CompanyDto>> Create(CreateCompanyDto createDto)
+    public async Task<IActionResult> Create([FromBody] CreateCompanyCommand command)
     {
         try
         {
-            var company = await _companyService.CreateAsync(createDto);
-            return CreatedAtAction(nameof(GetById), new { id = company.Id }, company);
+            var companyId = await _commandDispatcher.DispatchAsync(command);
+            return CreatedAtAction(nameof(GetById), new { id = companyId }, new { id = companyId });
         }
         catch (InvalidOperationException ex)
         {
-            return BadRequest(ex.Message);
+            return BadRequest(new { message = ex.Message });
         }
     }
 
-    [HttpPut("{id:guid}")]
-    public async Task<IActionResult> Update(Guid id, UpdateCompanyDto updateDto)
+    [HttpPut("{id}")]
+    public async Task<IActionResult> Update(Guid id, [FromBody] UpdateCompanyCommand command)
     {
         try
         {
-            await _companyService.UpdateAsync(id, updateDto);
+            command.Id = id;
+            await _commandDispatcher.DispatchAsync(command);
             return NoContent();
         }
         catch (InvalidOperationException ex)
         {
-            return BadRequest(ex.Message);
+            return BadRequest(new { message = ex.Message });
         }
     }
 
-    [HttpPost("{id:guid}/activate")]
+    [HttpPatch("{id}/activate")]
     public async Task<IActionResult> Activate(Guid id)
     {
         try
         {
-            await _companyService.ActivateAsync(id);
+            await _commandDispatcher.DispatchAsync(new ActivateCompanyCommand { Id = id });
             return NoContent();
         }
         catch (InvalidOperationException ex)
         {
-            return BadRequest(ex.Message);
+            return BadRequest(new { message = ex.Message });
         }
     }
 
-    [HttpPost("{id:guid}/deactivate")]
+    [HttpPatch("{id}/deactivate")]
     public async Task<IActionResult> Deactivate(Guid id)
     {
         try
         {
-            await _companyService.DeactivateAsync(id);
+            await _commandDispatcher.DispatchAsync(new DeactivateCompanyCommand { Id = id });
             return NoContent();
         }
         catch (InvalidOperationException ex)
         {
-            return BadRequest(ex.Message);
+            return BadRequest(new { message = ex.Message });
         }
-    }
-
-    [HttpGet("{id:guid}/exists")]
-    public async Task<ActionResult<bool>> Exists(Guid id)
-    {
-        var exists = await _companyService.ExistsAsync(id);
-        return Ok(exists);
     }
 } 
